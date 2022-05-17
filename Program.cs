@@ -1,7 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
 using LabManager.Database;
+using LabManager.Repositories;
 
 new DatabaseSetup();
+
+var computerRepository = new ComputerRepository();
 
 var connection = new SqliteConnection("Data Source=database.db");
 // chamado de routing ou roteamento
@@ -13,24 +16,10 @@ if(modelName == "Computer")
     if(modelAction == "List")
     {
         Console.WriteLine("Computer List");
-
-        connection = new SqliteConnection("Data Source=database.db");
-
-        connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM Computers;";
-
-        var reader = command.ExecuteReader();
-
-        while(reader.Read())
+        foreach (var computer in computerRepository.GetAll())
         {
-            Console.WriteLine("id {0}, ram {1}, {2}", reader.GetInt32(0), reader.GetString(1), reader.GetString(2));
+            Console.WriteLine("{0}, {1}, {2}", computer.Id, computer.Ram, computer.Processor);
         }
-
-
-        reader.Close();
-        connection.Close();
     }
 
     if(modelAction == "New")
@@ -75,7 +64,6 @@ if(modelName == "Lab")
             Console.WriteLine("id {0}, number {1}, name {2}, block {3}", reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3));
         }
 
-
         reader.Close();
         connection.Close();
     }
@@ -87,7 +75,6 @@ if(modelName == "Lab")
         var name = args[4];
         var block = args[5];
 
-    
         connection = new SqliteConnection("Data Source=database.db");
 
         connection.Open();
