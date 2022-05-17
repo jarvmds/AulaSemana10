@@ -66,12 +66,12 @@ if(modelName == "Computer")
         connection.Close();
     }
 
+}
 
-
-
+connection = new SqliteConnection("Data Source=database.db");
 connection.Open();
 
-var command = connection.CreateCommand();
+command = connection.CreateCommand();
 command.CommandText = @"
     CREATE TABLE IF NOT EXISTS Labs(
         id int not null primary key,
@@ -86,7 +86,7 @@ command.ExecuteNonQuery();
 
 connection.Close();
 
-    if(modelName == "Lab")
+if(modelName == "Lab")
 {
     if(modelAction == "List")
     {
@@ -118,7 +118,7 @@ connection.Close();
         var name = args[4];
         var block = args[5];
 
-       
+    
         connection = new SqliteConnection("Data Source=database.db");
 
         connection.Open();
