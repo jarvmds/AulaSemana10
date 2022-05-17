@@ -1,22 +1,9 @@
 ﻿using Microsoft.Data.Sqlite;
+using LabManager.Database;
+
+new DatabaseSetup();
 
 var connection = new SqliteConnection("Data Source=database.db");
-
-connection.Open();
-
-var command = connection.CreateCommand();
-command.CommandText = @"
-    CREATE TABLE IF NOT EXISTS Computers(
-        id int not null primary key,
-        ram varchar(100) not null,
-        processor varchar(100) not null
-    );
-";
-
-command.ExecuteNonQuery();
-
-connection.Close();
-
 // chamado de routing ou roteamento
 var modelName = args[0];
 var modelAction = args[1];
@@ -31,7 +18,7 @@ if(modelName == "Computer")
 
         connection.Open();
 
-        command = connection.CreateCommand();
+        var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM Computers;";
 
         var reader = command.ExecuteReader();
@@ -56,7 +43,7 @@ if(modelName == "Computer")
 
         connection.Open();
 
-        command = connection.CreateCommand();
+        var command = connection.CreateCommand();
         command.CommandText = "INSERT INTO Computers VALUES($id, $ram, $processor);";
         command.Parameters.AddWithValue("$id", id);
         command.Parameters.AddWithValue("$ram", ram);
@@ -68,24 +55,6 @@ if(modelName == "Computer")
 
 }
 
-connection = new SqliteConnection("Data Source=database.db");
-connection.Open();
-
-command = connection.CreateCommand();
-command.CommandText = @"
-    CREATE TABLE IF NOT EXISTS Labs(
-        id int not null primary key,
-        number varchar(100) not null,
-        name varchar(100) not null,
-        block varchar(100) not null
-
-    );
-";
-
-command.ExecuteNonQuery();
-
-connection.Close();
-
 if(modelName == "Lab")
 {
     if(modelAction == "List")
@@ -96,7 +65,7 @@ if(modelName == "Lab")
 
         connection.Open();
 
-        command = connection.CreateCommand();
+        var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM Labs;";
 
         var reader = command.ExecuteReader();
@@ -123,7 +92,7 @@ if(modelName == "Lab")
 
         connection.Open();
 
-        command = connection.CreateCommand();
+        var command = connection.CreateCommand();
         command.CommandText = "INSERT INTO Computers VALUES($id, $number, $name, $block);";
         command.Parameters.AddWithValue("$id", id);
         command.Parameters.AddWithValue("$number", number);
