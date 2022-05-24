@@ -1,15 +1,14 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using LabManager.Database;
 using LabManager.Repositories;
 
-new DatabaseSetup();
-
-var computerRepository = new ComputerRepository();
-
-var connection = new SqliteConnection("Data Source=database.db");
-// chamado de routing ou roteamento
+//Routing
 var modelName = args[0];
 var modelAction = args[1];
+
+
+var databaseConfig = new DatabaseConfig(); 
+var computerRepository = new ComputerRepository(databaseConfig);
 
 if(modelName == "Computer")
 {
@@ -18,30 +17,28 @@ if(modelName == "Computer")
         Console.WriteLine("Computer List");
         foreach (var computer in computerRepository.GetAll())
         {
-            Console.WriteLine("{0}, {1}, {2}", computer.Id, computer.Ram, computer.Processor);
+            Console.WriteLine("{0},{1},{2}", computer.Id, computer.Ram, computer.Processor);
         }
     }
 
     if(modelAction == "New")
     {
-        int id = Convert.ToInt32(args[2]);
+        var id = Convert.ToInt32(args[2]);
         var ram = args[3];
         var processor = args[4];
-       
-        connection = new SqliteConnection("Data Source=database.db");
-
+        
+        var connection = new SqliteConnection("Data Source=database.db");
         connection.Open();
-
+        
         var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO Computers VALUES($id, $ram, $processor);";
+        command.CommandText = "INSERT INTO Computers VALUES ($id, $ram, $processor);";
         command.Parameters.AddWithValue("$id", id);
         command.Parameters.AddWithValue("$ram", ram);
         command.Parameters.AddWithValue("$processor", processor);
-
+        
         command.ExecuteNonQuery();
         connection.Close();
     }
-
 }
 
 if(modelName == "Lab")
@@ -49,43 +46,40 @@ if(modelName == "Lab")
     if(modelAction == "List")
     {
         Console.WriteLine("Lab List");
-
-        connection = new SqliteConnection("Data Source=database.db");
-
+        var connection = new SqliteConnection("Data Source=database.db");
         connection.Open();
-
+        
         var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM Labs;";
-
+        
         var reader = command.ExecuteReader();
 
         while(reader.Read())
         {
-            Console.WriteLine("id {0}, number {1}, name {2}, block {3}", reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3));
+            Console.WriteLine("{0},{1},{2},{3}", reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3));
         }
-
+        
         reader.Close();
         connection.Close();
     }
 
     if(modelAction == "New")
     {
-        int id = Convert.ToInt32(args[2]);
+        var id = Convert.ToInt32(args[2]);
         var number = args[3];
         var name = args[4];
         var block = args[5];
-
-        connection = new SqliteConnection("Data Source=database.db");
-
+        
+        var connection = new SqliteConnection("Data Source=database.db");
         connection.Open();
-
+        
         var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO Computers VALUES($id, $number, $name, $block);";
+        command.CommandText = "INSERT INTO Labs VALUES ($id, $number, $name, $block);";
         command.Parameters.AddWithValue("$id", id);
         command.Parameters.AddWithValue("$number", number);
         command.Parameters.AddWithValue("$name", name);
         command.Parameters.AddWithValue("$block", block);
-
+        
         command.ExecuteNonQuery();
         connection.Close();
     }
