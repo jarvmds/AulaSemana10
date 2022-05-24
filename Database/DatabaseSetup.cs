@@ -2,17 +2,18 @@ using Microsoft.Data.Sqlite;
 
 namespace LabManager.Database;
 
-class DatabaseSetup
+class DatabaseSetup 
 {
-
-    public DatabaseSetup()
+    private DatabaseConfig databaseConfig;
+    public DatabaseSetup(DatabaseConfig databaseConfig)
     {
+        this.databaseConfig = databaseConfig; 
         CreateTableComputer();
         CreateTableLab();
     }
     private void CreateTableComputer()
     {
-         var connection = new SqliteConnection("Data Source=database.db");
+        var connection = new SqliteConnection("Data Source=database.db");
         connection.Open();
 
         var command = connection.CreateCommand();
@@ -23,13 +24,11 @@ class DatabaseSetup
                 processor varchar(100) not null
             );
         ";
-
         command.ExecuteNonQuery();
         connection.Close();
-
     }
 
-    private void CreateTableLab() //pode ser private pois nao sera chamado no program.cs
+    private void CreateTableLab()
     {
         var connection = new SqliteConnection("Data Source=database.db");
         connection.Open();
@@ -41,13 +40,9 @@ class DatabaseSetup
                 number varchar(100) not null,
                 name varchar(100) not null,
                 block varchar(100) not null
-
             );
         ";
-
         command.ExecuteNonQuery();
         connection.Close();
-
     }
-    
 }
