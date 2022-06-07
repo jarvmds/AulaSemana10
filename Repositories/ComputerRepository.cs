@@ -25,7 +25,7 @@ class ComputerRepository
         {
             var computer = new Computer(reader.GetInt32(0),reader.GetString(1),reader.GetString(2));
 
-            computers.Add(computer);
+            computers.Add(readerToComputer(reader));
         }
         connection.Close();
 
@@ -60,10 +60,30 @@ class ComputerRepository
         
         var reader = command.ExecuteReader();
         reader.Read();
-        var computer = new Computer(reader.GetInt32(0),reader.GetString(1),reader.GetString(2));
+        var computer = readerToComputer(reader);
 
         connection.Close();
 
+        return computer;
+    }
+
+    public bool existsById (int id)
+    {
+        var connection = new SqliteConnection(databaseConfig.ConnectionString);
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT count (id) FROM Computers WHERE id = $id;";
+        command.Parameters.AddWithValue("$id", id);
+
+        int result = Convert.ToInt32 (command.ExecuteScalar()); 
+
+        return result == 1;
+    }
+
+    private Computer readerToComputer(SqliteDataReader reader )
+    {
+        var computer = new Computer (reader.GetInt32(0), reader.GetString(1), reader.GetString(2));
         return computer;
     }
 
@@ -93,7 +113,13 @@ class ComputerRepository
         command.CommandText = "DELETE FROM Computers WHERE id = $id;";
         command.Parameters.AddWithValue("$id", id);
 
-        command.ExecuteNonQuery();
+        command.ExecuteNonQuery(); //ExecuteNonQuery executa, mas nao devolve valor no banco (oposto ExecuteReader)
         connection.Close();
     }
 }
+
+//tarefa: verificar se existe registro no banco antes de apresentar ao usuario (apresentar 0 se nao tiver e vice-versa)
+//função count sql
+// SELECT count(id) FROM Computers WHERE id = $id;
+// chamar no program mas fica no computerrepository
+//existsById
