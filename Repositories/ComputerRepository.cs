@@ -1,6 +1,7 @@
-using LabManager.Models;
 using LabManager.Database;
+using LabManager.Models;
 using Microsoft.Data.Sqlite;
+using Dapper;
 
 namespace LabManager.Repositories;
 
@@ -8,27 +9,17 @@ class ComputerRepository
 {
     private DatabaseConfig databaseConfig;
     
-    public ComputerRepository(DatabaseConfig databaseConfig) => this.databaseConfig = databaseConfig;
-    public List<Computer> GetAll()
+    public ComputerRepository(DatabaseConfig databaseConfig) 
     {
-        var computers  = new List<Computer>();
-        
+        this.databaseConfig = databaseConfig;
+    }
+
+    public IEnumerable<Computer> GetAll()
+    {
         var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-        
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM Computers;";
-        
-        var reader = command.ExecuteReader();
-
-        while(reader.Read()) // reader.Read() é o comando utilizado para iniciar uma leitura
-        {
-            var computer = new Computer(reader.GetInt32(0),reader.GetString(1),reader.GetString(2));
-
-            computers.Add(readerToComputer(reader));
-        }
+        var computers = connection.Query<Computer>("SELECT * FROM Computers");
         connection.Close();
-
         return computers;
     }
 
@@ -36,71 +27,26 @@ class ComputerRepository
     {
         var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-        
-        var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO Computers VALUES ($id, $ram, $processor);"; // inserindo comando
-        command.Parameters.AddWithValue("$id", computer.Id); // adicionando os valores do parametro para o comando SQL
-        command.Parameters.AddWithValue("$ram", computer.Ram);
-        command.Parameters.AddWithValue("$processor", computer.Processor);
-        
-        command.ExecuteNonQuery(); // para quando o método não precisa retornar
-        connection.Close(); //fechando conexão
-
-        return computer;
-    }
-
-    public Computer GetById(int id)
-    {
-        var connection = new SqliteConnection(databaseConfig.ConnectionString);
-        connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM Computers WHERE id = $id;";
-        command.Parameters.AddWithValue("$id",id);
-        
-        var reader = command.ExecuteReader();
-        reader.Read();
-        var computer = readerToComputer(reader);
-
+        connection.Execute("INSERT INTO Computers VALUES(@Id, @Ram, @Processor)",computer);
         connection.Close();
-
         return computer;
     }
 
-    public bool existsById (int id)
+   public Computer GetById(int id)
     {
         var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT count (id) FROM Computers WHERE id = $id;";
-        command.Parameters.AddWithValue("$id", id);
-
-        int result = Convert.ToInt32 (command.ExecuteScalar()); 
-
-        return result == 1;
-    }
-
-    private Computer readerToComputer(SqliteDataReader reader )
-    {
-        var computer = new Computer (reader.GetInt32(0), reader.GetString(1), reader.GetString(2));
-        return computer;
+        var computer = connection.QueryFirstOrDefault<Computer>("SELECT * FROM Computers WHERE id = @Id;", new {Id = id});
+        connection.Close();
+        return computer;        
     }
 
     public Computer Update(Computer computer)
-    {
+    {   
         var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "UPDATE Computers SET ram = $ram, processor = $processor WHERE id = $id;";
-        command.Parameters.AddWithValue("$id", computer.Id); 
-        command.Parameters.AddWithValue("$ram", computer.Ram);
-        command.Parameters.AddWithValue("$processor", computer.Processor);
-
-        command.ExecuteNonQuery();
+        connection.Execute("UPDATE Computers SET ram = @Ram, processor = @Processor WHERE id = @Id;",computer);
         connection.Close();
-
         return computer;
     }
 
@@ -108,18 +54,23 @@ class ComputerRepository
     {
         var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "DELETE FROM Computers WHERE id = $id;";
-        command.Parameters.AddWithValue("$id", id);
-
-        command.ExecuteNonQuery(); //ExecuteNonQuery executa, mas nao devolve valor no banco (oposto ExecuteReader)
+        connection.Execute("DELETE FROM Computers WHERE id = @Id;",new {Id = id});
         connection.Close();
     }
-}
 
-//tarefa: verificar se existe registro no banco antes de apresentar ao usuario (apresentar 0 se nao tiver e vice-versa)
-//função count sql
-// SELECT count(id) FROM Computers WHERE id = $id;
-// chamar no program mas fica no computerrepository
-//existsById
+    public bool ExistsById(int id) //devolve se computador existe ou não no banco de dados
+    {
+        var connection = new SqliteConnection(databaseConfig.ConnectionString); 
+        connection.Open();
+        var result = connection.ExecuteScalar<Boolean>("SELECT COUNT(id) FROM Computers WHERE id=$id;", new { Id = id });
+
+        return result; 
+    }
+
+    private Computer readerToComputer(SqliteDataReader reader)
+    {
+        var Computer = new Computer(reader.GetInt32(0),reader.GetString(1),reader.GetString(2));
+
+        return Computer;
+    }
+}
