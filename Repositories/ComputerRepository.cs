@@ -36,7 +36,7 @@ class ComputerRepository
     {
         var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-        var computer = connection.QueryFirstOrDefault<Computer>("SELECT * FROM Computers WHERE id = @Id;", new {Id = id});
+        var computer = connection.QueryFirstOrDefault<Computer>("SELECT * FROM Computers WHERE id = @Id;", new {Id = @id});
         connection.Close();
         return computer;        
     }
@@ -54,7 +54,7 @@ class ComputerRepository
     {
         var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-        connection.Execute("DELETE FROM Computers WHERE id = @Id;",new {Id = id});
+        connection.Execute("DELETE FROM Computers WHERE id = @Id;",new {Id = @id});
         connection.Close();
     }
 
@@ -62,7 +62,7 @@ class ComputerRepository
     {
         var connection = new SqliteConnection(databaseConfig.ConnectionString); 
         connection.Open();
-        var result = connection.ExecuteScalar<Boolean>("SELECT COUNT(id) FROM Computers WHERE id=$id;", new { Id = id });
+        var result = connection.ExecuteScalar<Boolean>("SELECT COUNT(id) FROM Computers WHERE id=@id;", new { Id = @id });
 
         return result; 
     }
